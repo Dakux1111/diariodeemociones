@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario Emocional Lunar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7ff;color:#1a1a2e;font-size:14px}
+.app{max-width:900px;margin:0 auto;padding:1rem}
+h1{font-size:20px;font-weight:600;margin-bottom:.3rem;color:#1a1a2e}
+.subtitle{font-size:13px;color:#666;margin-bottom:1.2rem}
+.tabs{display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap;background:#fff;padding:8px;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.tab{padding:7px 16px;border:none;border-radius:10px;cursor:pointer;font-size:13px;color:#666;background:transparent;transition:all .18s;font-weight:500}
+.tab.active{background:#7F77DD;color:#fff}
+.sec{display:none}.sec.active{display:block}
+.card{background:#fff;border:1px solid #eee;border-radius:14px;padding:1.1rem;margin-bottom:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.lbl{font-size:12px;color:#888;margin-bottom:6px;display:block;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+input[type=text],input[type=number],textarea{width:100%;padding:9px 12px;border:1px solid #e0e0e0;border-radius:10px;background:#fafafa;color:#1a1a2e;font-size:13px;font-family:inherit;outline:none;transition:border .2s}
+input:focus,textarea:focus{border-color:#7F77DD}
+textarea{resize:vertical;min-height:70px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.btn{padding:9px 20px;border:1px solid #ddd;border-radius:10px;cursor:pointer;font-size:13px;background:#fff;color:#333;transition:all .18s;font-weight:500}
+.btn:hover{background:#f0f0f0}
+.btnpri{padding:10px 22px;border:none;border-radius:10px;cursor:pointer;font-size:13px;background:#7F77DD;color:#fff;font-weight:500;transition:all .18s}
+.btnpri:hover{background:#534AB7}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:5px;max-height:340px;overflow-y:auto;padding:2px}
+.eb{padding:8px 6px;border:1.5px solid #eee;border-radius:10px;cursor:pointer;font-size:11px;text-align:center;background:#fafafa;color:#333;transition:all .18s;display:flex;flex-direction:column;gap:3px;align-items:center}
+.eb:hover{border-color:#bbb;background:#f5f5f5}
+.eb.sel{font-weight:600}
+.edot{width:10px;height:10px;border-radius:50%}
+.irow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ib{width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;cursor:pointer;background:#fafafa;color:#333;font-size:13px;font-weight:600;transition:all .18s}
+.ib:hover{background:#f0eeff;border-color:#7F77DD}
+.ib.sel{background:#7F77DD;color:#fff;border-color:#7F77DD}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cday{min-height:52px;border:1px solid #eee;border-radius:8px;padding:4px;font-size:11px;color:#888;cursor:pointer;background:#fafafa;transition:border .15s}
+.cday:hover{border-color:#7F77DD}
+.cday.today{border:2px solid #7F77DD;background:#f0eeff}
+.cdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin:1px}
+.le{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.le:last-child{border-bottom:none}
+.ldot{width:12px;height:12px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.lmeta{font-size:11px;color:#999;margin-top:2px}
+.sc{background:#f8f7ff;border-radius:10px;padding:12px;text-align:center}
+.sv{font-size:22px;font-weight:700;color:#1a1a2e}
+.sl{font-size:11px;color:#888;margin-top:2px}
+.notice{font-size:13px;color:#999;text-align:center;padding:24px}
+.secttl{font-size:15px;font-weight:600;margin-bottom:.9rem;color:#1a1a2e}
+.fbtn{padding:5px 12px;border:1px solid #e0e0e0;border-radius:20px;cursor:pointer;font-size:12px;background:#fff;color:#888;transition:all .18s}
+.fbtn.active{background:#f0eeff;color:#534AB7;border-color:#c4b5fd}
+.pavatar{width:60px;height:60px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#534AB7;margin:0 auto 12px}
+.header-strip{background:linear-gradient(135deg,#7F77DD,#a78bfa);padding:1.2rem 1.5rem;border-radius:16px;margin-bottom:1rem;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.moon-box{text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header-strip">
+  <div>
+    <div id="greet" style="font-size:16px;font-weight:600">Diario Emocional Lunar</div>
+    <div id="dateHdr" style="font-size:12px;opacity:.85;margin-top:3px"></div>
+  </div>
+  <div class="moon-box">
+    <div id="moonIcon" style="font-size:28px"></div>
+    <div id="moonName" style="font-size:11px;opacity:.85;margin-top:2px"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('reg')">Registrar</button>
+  <button class="tab" onclick="showTab('cal')">Calendario</button>
+  <button class="tab" onclick="showTab('graf')">Gráficos</button>
+  <button class="tab" onclick="showTab('hist')">Historial</button>
+  <button class="tab" onclick="showTab('perf')">Perfil</button>
+</div>
+
+<!-- REGISTRO -->
+<div id="s-reg" class="sec active">
+  <div class="card">
+    <div class="lbl">¿Cómo te sientes ahora? <span id="sEmoName" style="color:#7F77DD;font-weight:600;text-transform:none;letter-spacing:0"></span></div>
+    <div class="egrid" id="egrid"></div>
+  </div>
+  <div class="card">
+    <div class="lbl">Intensidad emocional (1–10)</div>
+    <div class="irow" id="irow"></div>
+    <div style="margin-top:8px;font-size:11px;color:#bbb" id="intDesc"></div>
+  </div>
+  <div class="card">
+    <div class="lbl">¿Qué lo originó? (opcional)</div>
+    <textarea id="nota" placeholder="Ej: una conversación difícil, un logro, el clima, soledad, música..."></textarea>
+  </div>
+  <div style="display:flex;justify-content:flex-end">
+    <button class="btnpri" onclick="save()">Guardar registro</button>
+  </div>
+  <div id="smsg" style="font-size:12px;color:#1D9E75;text-align:right;margin-top:7px;min-height:18px;font-weight:500"></div>
+</div>
+
+<!-- CALENDARIO -->
+<div id="s-cal" class="sec">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <button class="btn" onclick="cnav(-1)">← Anterior</button>
+      <span class="secttl" id="caltitle" style="margin:0"></span>
+      <button class="btn" onclick="cnav(1)">Siguiente →</button>
+    </div>
+    <div class="cgrid" id="calhead"></div>
+    <div class="cgrid" id="calbody" style="margin-top:3px"></div>
+    <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#888" id="calleg"></div>
+  </div>
+  <div class="card" id="caldet" style="display:none">
+    <div class="secttl" id="caldetttl"></div>
+    <div id="caldetlist"></div>
+  </div>
+</div>
+
+<!-- GRÁFICOS -->
+<div id="s-graf" class="sec">
+  <div class="g3" id="statcards" style="margin-bottom:.9rem"></div>
+  <div class="card"><div class="secttl">Emociones más frecuentes</div><div id="wrapFreq" style="position:relative;height:220px"><canvas id="cFreq"></canvas></div></div>
+  <div class="card"><div class="secttl">Intensidad a lo largo del tiempo</div><div id="wrapLine" style="position:relative;height:200px"><canvas id="cLine"></canvas></div></div>
+  <div class="card">
+    <div class="secttl">Distribución por categoría</div>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <div id="wrapDona" style="position:relative;height:180px;width:180px;flex-shrink:0"><canvas id="cDona"></canvas></div>
+      <div id="donaleg" style="flex:1;font-size:13px"></div>
+    </div>
+  </div>
+  <div class="card"><div class="secttl">Actividad por día de la semana</div><div id="wchart"></div></div>
+  <div class="card"><div class="secttl">Emociones y fases lunares</div><div id="moonChart" style="font-size:13px;color:#888"></div></div>
+</div>
+
+<!-- HISTORIAL -->
+<div id="s-hist" class="sec">
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="filtrow"></div>
+  <div id="histlist"></div>
+  <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn" onclick="exportar()">Exportar JSON</button>
+    <button class="btn" onclick="exportarCSV()">Exportar CSV</button>
+  </div>
+</div>
+
+<!-- PERFIL -->
+<div id="s-perf" class="sec">
+  <div class="card" style="text-align:center">
+    <div class="pavatar" id="pavatar">?</div>
+    <div id="pnamedis" style="font-size:18px;font-weight:600"></div>
+    <div id="pagedis" style="font-size:13px;color:#888;margin-top:4px"></div>
+    <div id="pobjdis" style="font-size:12px;color:#aaa;margin-top:6px;font-style:italic"></div>
+  </div>
+  <div class="card">
+    <div class="secttl">Editar perfil</div>
+    <div class="g2">
+      <div><span class="lbl">Nombre</span><input type="text" id="pnom" placeholder="Tu nombre"></div>
+      <div><span class="lbl">Edad</span><input type="number" id="pedad" placeholder="Años" min="1" max="120"></div>
+    </div>
+    <div style="margin-top:10px"><span class="lbl">Mi objetivo</span><textarea id="pobj" placeholder="¿Qué quieres entender sobre tus emociones?"></textarea></div>
+    <div style="margin-top:10px;text-align:right"><button class="btnpri" onclick="savePerfil()">Guardar perfil</button></div>
+    <div id="pmsg" style="font-size:12px;color:#1D9E75;text-align:right;margin-top:6px;min-height:16px;font-weight:500"></div>
+  </div>
+  <div class="card"><div class="secttl">Tu viaje emocional</div><div class="g3" id="pstats"></div></div>
+</div>
+</div>
+
+<script>
+const EMOS=[
+  {n:"Alegría",c:"#F0C330",cat:"positiva"},{n:"Amor",c:"#E8607A",cat:"positiva"},{n:"Gratitud",c:"#F4A26A",cat:"positiva"},
+  {n:"Entusiasmo",c:"#E8873E",cat:"positiva"},{n:"Esperanza",c:"#7FC97B",cat:"positiva"},{n:"Orgullo",c:"#A78BFA",cat:"positiva"},
+  {n:"Calma",c:"#5BB8F5",cat:"positiva"},{n:"Confianza",c:"#45A29E",cat:"positiva"},{n:"Euforia",c:"#F9A8D4",cat:"positiva"},
+  {n:"Ternura",c:"#FCA5A5",cat:"positiva"},{n:"Inspiración",c:"#C4B5FD",cat:"positiva"},{n:"Satisfacción",c:"#86EFAC",cat:"positiva"},
+  {n:"Curiosidad",c:"#FDE68A",cat:"positiva"},{n:"Asombro",c:"#BAE6FD",cat:"positiva"},{n:"Conexión",c:"#D8B4FE",cat:"positiva"},
+  {n:"Alivio",c:"#A8D8B8",cat:"positiva"},{n:"Paz interior",c:"#90C8B0",cat:"positiva"},{n:"Compasión",c:"#F0B8C0",cat:"positiva"},
+  {n:"Tristeza",c:"#6B7DB3",cat:"negativa"},{n:"Ansiedad",c:"#9B8EA0",cat:"negativa"},{n:"Enojo",c:"#E55A5A",cat:"negativa"},
+  {n:"Miedo",c:"#7B6FA0",cat:"negativa"},{n:"Frustración",c:"#D4845A",cat:"negativa"},{n:"Soledad",c:"#8A9DB5",cat:"negativa"},
+  {n:"Vergüenza",c:"#C97A7A",cat:"negativa"},{n:"Culpa",c:"#A08070",cat:"negativa"},{n:"Agobio",c:"#B5769A",cat:"negativa"},
+  {n:"Decepción",c:"#8095B0",cat:"negativa"},{n:"Desesperanza",c:"#707080",cat:"negativa"},{n:"Celos",c:"#8BB54A",cat:"negativa"},
+  {n:"Resentimiento",c:"#A05050",cat:"negativa"},{n:"Rechazo",c:"#B07080",cat:"negativa"},{n:"Pánico",c:"#C05070",cat:"negativa"},
+  {n:"Nostalgia",c:"#9BB0C8",cat:"neutra"},{n:"Confusión",c:"#C0A870",cat:"neutra"},{n:"Sorpresa",c:"#F0D080",cat:"neutra"},
+  {n:"Indiferencia",c:"#B0B0A8",cat:"neutra"},{n:"Inquietud",c:"#A8A0C0",cat:"neutra"},{n:"Melancolía",c:"#8898B8",cat:"neutra"},
+  {n:"Vulnerabilidad",c:"#D0A8B8",cat:"neutra"},{n:"Ambivalencia",c:"#B8C0A0",cat:"neutra"},{n:"Aburrimiento",c:"#A0A090",cat:"neutra"},
+  {n:"Extravío",c:"#C0B090",cat:"neutra"},{n:"Nostalgia",c:"#9BB0C8",cat:"neutra"}
+];
+const CATC={positiva:"#7FC97B",negativa:"#E55A5A",neutra:"#8898B8"};
+const INTDESC={1:"Muy leve",2:"Leve",3:"Ligera",4:"Moderada baja",5:"Moderada",6:"Moderada alta",7:"Intensa",8:"Muy intensa",9:"Fuerte",10:"Máxima intensidad"};
+let selE=null,selI=5,cY=new Date().getFullYear(),cM=new Date().getMonth();
+
+function gd(){try{return JSON.parse(localStorage.getItem('emoLunar')||'[]')}catch{return[]}}
+function sd(d){localStorage.setItem('emoLunar',JSON.stringify(d))}
+function gp(){try{return JSON.parse(localStorage.getItem('emoPerf')||'{}')}catch{return{}}}
+function sp(p){localStorage.setItem('emoPerf',JSON.stringify(p))}
+
+function moon(dt){
+  const lp=29.53058867,known=new Date(2000,0,6,18,14);
+  const ph=(((dt-known)/86400000%lp)+lp)%lp;
+  const ic=["🌑","🌒","🌒","🌓","🌔","🌔","🌕","🌖","🌖","🌗","🌘","🌘"];
+  const nm=["Luna nueva","Creciente","Creciente","Cuarto creciente","Gibosa creciente","Gibosa creciente","Luna llena","Gibosa menguante","Gibosa menguante","Cuarto menguante","Menguante","Menguante"];
+  const i=Math.floor(ph/(lp/12));
+  return{icon:ic[i],name:nm[i]};
+}
+
+function initE(){
+  const g=document.getElementById('egrid');g.innerHTML='';
+  EMOS.forEach((e,i)=>{
+    const b=document.createElement('button');b.className='eb';b.id='e'+i;
+    b.innerHTML=`<div class="edot" style="background:${e.c}"></div><span>${e.n}</span>`;
+    b.onclick=()=>selEmo(i);g.appendChild(b);
+  });
+}
+function selEmo(i){
+  document.querySelectorAll('.eb').forEach(b=>{b.classList.remove('sel');b.style.borderColor='#eee';b.style.background='#fafafa'});
+  const b=document.getElementById('e'+i);b.classList.add('sel');
+  b.style.borderColor=EMOS[i].c;b.style.background=EMOS[i].c+'22';
+  selE=i;document.getElementById('sEmoName').textContent='→ '+EMOS[i].n+' ('+EMOS[i].cat+')';
+}
+function initI(){
+  const r=document.getElementById('irow');r.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const b=document.createElement('button');b.className='ib'+(i===selI?' sel':'');
+    b.textContent=i;
+    b.onclick=()=>{selI=i;document.querySelectorAll('.ib').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');document.getElementById('intDesc').textContent=INTDESC[i]};
+    r.appendChild(b);
+  }
+  document.getElementById('intDesc').textContent=INTDESC[selI];
+}
+function hdr(){
+  const now=new Date(),m=moon(now);
+  document.getElementById('moonIcon').textContent=m.icon;
+  document.getElementById('moonName').textContent=m.name;
+  document.getElementById('dateHdr').textContent=now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const p=gp();
+  document.getElementById('greet').textContent=p.nombre?`Hola, ${p.nombre} 👋`:'Diario Emocional Lunar';
+}
+function save(){
+  if(selE===null){alert('Selecciona una emoción primero');return}
+  const now=new Date(),d=gd(),p=gp();
+  d.push({ts:now.toISOString(),emo:EMOS[selE].n,color:EMOS[selE].c,cat:EMOS[selE].cat,int:selI,nota:document.getElementById('nota').value.trim(),moon:moon(now).name,moonIcon:moon(now).icon,nombre:p.nombre||'',edad:p.edad||''});
+  sd(d);
+  const msg=document.getElementById('smsg');
+  msg.textContent='✓ Registro guardado: '+EMOS[selE].n+' · intensidad '+selI+'/10 · '+moon(now).icon+' '+moon(now).name;
+  document.getElementById('nota').value='';
+  setTimeout(()=>msg.textContent='',4000);
+}
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+t).classList.add('active');
+  if(t==='cal')rCal();if(t==='graf')rGraf();if(t==='hist')rHist();if(t==='perf')rPerf();
+}
+function rCal(){
+  const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('caltitle').textContent=MN[cM]+' '+cY;
+  const h=document.getElementById('calhead'),b=document.getElementById('calbody');
+  h.innerHTML='';b.innerHTML='';
+  ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].forEach(d=>h.innerHTML+=`<div style="text-align:center;font-size:11px;color:#aaa;padding:4px;font-weight:500">${d}</div>`);
+  const first=new Date(cY,cM,1).getDay(),days=new Date(cY,cM+1,0).getDate();
+  const data=gd(),today=new Date();
+  for(let i=0;i<first;i++)b.innerHTML+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${cY}-${String(cM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ens=data.filter(e=>e.ts.startsWith(ds));
+    const isT=today.getDate()===d&&today.getMonth()===cM&&today.getFullYear()===cY;
+    const mo=moon(new Date(cY,cM,d));
+    let div=`<div class="cday${isT?' today':''}" onclick="showDet('${ds}')">`;
+    div+=`<div style="font-weight:600;font-size:11px;color:#444">${d}</div>`;
+    div+=`<div style="font-size:9px" title="${mo.name}">${mo.icon}</div>`;
+    ens.slice(0,4).forEach(e=>div+=`<span class="cdot" style="background:${e.color}" title="${e.emo}"></span>`);
+    if(ens.length>4)div+=`<span style="font-size:9px;color:#aaa">+${ens.length-4}</span>`;
+    b.innerHTML+=div+'</div>';
+  }
+  const leg=document.getElementById('calleg');
+  leg.innerHTML='<strong style="color:#555">Categorías:</strong> ';
+  Object.entries(CATC).forEach(([k,v])=>leg.innerHTML+=`<span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:${v};display:inline-block"></span>${k}</span> `);
+}
+function showDet(ds){
+  const d=gd(),ens=d.filter(e=>e.ts.startsWith(ds));
+  const det=document.getElementById('caldet');
+  if(!ens.length){det.style.display='none';return}
+  det.style.display='block';
+  document.getElementById('caldetttl').textContent='Registros del '+new Date(ds+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('caldetlist').innerHTML=ens.map(e=>{
+    const t=new Date(e.ts).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    return`<div class="le"><div class="ldot" style="background:${e.color}"></div><div><div style="font-size:13px;font-weight:600">${e.emo} <span style="font-size:11px;font-weight:400;color:#888">· ${e.int}/10</span></div><div class="lmeta">${t} · ${e.moonIcon||''} ${e.moon}${e.nota?' · "'+e.nota+'"':''}</div></div></div>`;
+  }).join('');
+}
+function cnav(d){cM+=d;if(cM>11){cM=0;cY++}if(cM<0){cM=11;cY--}rCal()}
+function freshCanvas(wrapperId, canvasId){
+  const wrap=document.getElementById(wrapperId);
+  const old=document.getElementById(canvasId);
+  if(old)old.remove();
+  const c=document.createElement('canvas');
+  c.id=canvasId;
+  wrap.appendChild(c);
+  return c;
+}
+function rGraf(){
+  const data=gd(),sc=document.getElementById('statcards');
+  if(!data.length){
+    sc.innerHTML='<div class="notice" style="grid-column:span 3">Aún no hay registros. ¡Empieza en la pestaña Registrar!</div>';
+    document.getElementById('wrapFreq').innerHTML='<div class="notice">Sin datos aún</div>';
+    document.getElementById('wrapLine').innerHTML='<div class="notice">Sin datos aún</div>';
+    document.getElementById('wrapDona').innerHTML='';
+    document.getElementById('donaleg').innerHTML='';
+    document.getElementById('wchart').innerHTML='';
+    document.getElementById('moonChart').innerHTML='<div class="notice">Sin datos aún</div>';
+    return;
+  }
+  const avg=(data.reduce((a,b)=>a+b.int,0)/data.length).toFixed(1);
+  const cats={};data.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+1);
+  const dias=new Set(data.map(e=>e.ts.slice(0,10))).size;
+  sc.innerHTML=`<div class="sc"><div class="sv">${data.length}</div><div class="sl">registros totales</div></div><div class="sc"><div class="sv">${avg}</div><div class="sl">intensidad media</div></div><div class="sc"><div class="sv">${dias}</div><div class="sl">días activos</div></div>`;
+  const freq={};data.forEach(e=>freq[e.emo]=(freq[e.emo]||0)+1);
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const ec=sorted.map(([n])=>(EMOS.find(e=>e.n===n)||{c:'#888'}).c);
+  new Chart(freshCanvas('wrapFreq','cFreq'),{type:'bar',data:{labels:sorted.map(e=>e[0]),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:ec,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{stepSize:1,precision:0}}}}});
+  const l30=data.slice(-30);
+  new Chart(freshCanvas('wrapLine','cLine'),{type:'line',data:{labels:l30.map(e=>new Date(e.ts).toLocaleDateString('es-CO',{day:'numeric',month:'short'})),datasets:[{data:l30.map(e=>e.int),borderColor:'#7F77DD',backgroundColor:'#7F77DD15',tension:0.4,fill:true,pointBackgroundColor:l30.map(e=>e.color),pointRadius:5,pointHoverRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:ctx=>'Emoción: '+l30[ctx.dataIndex].emo}}},scales:{y:{min:0,max:10,ticks:{stepSize:2}}}}});
+  const cv=Object.values(cats),ck=Object.keys(cats),cc=[CATC.positiva,CATC.negativa,CATC.neutra];
+  new Chart(freshCanvas('wrapDona','cDona'),{type:'doughnut',data:{labels:ck,datasets:[{data:cv,backgroundColor:cc,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'62%'}});
+  const total=cv.reduce((a,b)=>a+b,0);
+  document.getElementById('donaleg').innerHTML=ck.map((k,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:11px;height:11px;border-radius:50%;background:${cc[i]};display:inline-block;flex-shrink:0"></span><span style="color:#333;font-weight:500">${k}</span><span style="color:#888;margin-left:auto">${cv[i]} (${Math.round(cv[i]/total*100)}%)</span></div>`).join('');
+  const dias7=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],dc=Array(7).fill(0);
+  data.forEach(e=>dc[new Date(e.ts).getDay()]++);
+  const mx=Math.max(...dc,1);
+  document.getElementById('wchart').innerHTML=`<div style="display:flex;align-items:flex-end;gap:5px;height:80px">${dc.map((c,i)=>`<div style="flex:1;border-radius:4px 4px 0 0;background:${c===Math.max(...dc)?'#7F77DD':'#c4b5fd'};height:${Math.round((c/mx)*68)+8}px" title="${c} registros el ${dias7[i]}"></div>`).join('')}</div><div style="display:flex;gap:5px;margin-top:5px">${dias7.map(d=>`<div style="flex:1;text-align:center;font-size:11px;color:#999">${d}</div>`).join('')}</div>`;
+  const moonF={};data.forEach(e=>moonF[e.moon]=(moonF[e.moon]||0)+1);
+  const moonSorted=Object.entries(moonF).sort((a,b)=>b[1]-a[1]);
+  const moonIcons={"Luna nueva":"🌑","Creciente":"🌒","Cuarto creciente":"🌓","Gibosa creciente":"🌔","Luna llena":"🌕","Gibosa menguante":"🌖","Cuarto menguante":"🌗","Menguante":"🌘"};
+  document.getElementById('moonChart').innerHTML=moonSorted.map(([k,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">${moonIcons[k]||'🌙'}</span><span style="color:#333;flex:1">${k}</span><div style="background:#e8e5ff;border-radius:20px;height:8px;flex:2;overflow:hidden"><div style="background:#7F77DD;height:100%;border-radius:20px;width:${Math.round(v/data.length*100)}%"></div></div><span style="color:#888;font-size:12px;min-width:28px">${v}</span></div>`).join('')+'<div style="margin-top:10px;font-size:12px;color:#aaa;font-style:italic">Observa si hay patrones entre tu estado emocional y las fases lunares.</div>';
+}
+function rHist(){
+  const fr=document.getElementById('filtrow');fr.innerHTML='<span style="font-size:12px;color:#999;align-self:center;font-weight:500">Filtrar:</span>';
+  ['todos','positiva','negativa','neutra'].forEach(f=>{
+    const b=document.createElement('button');b.className='fbtn'+(f==='todos'?' active':'');b.textContent=f;
+    b.onclick=()=>{document.querySelectorAll('.fbtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');rHistList(f)};
+    fr.appendChild(b);
+  });
+  rHistList('todos');
+}
+function rHistList(filt){
+  const data=gd(),list=document.getElementById('histlist');
+  const fil=filt==='todos'?data:data.filter(e=>e.cat===filt);
+  if(!fil.length){list.innerHTML='<div class="notice">No hay registros aún.<br>¡Ve a la pestaña Registrar para empezar!</div>';return}
+  list.innerHTML=[...fil].reverse().slice(0,100).map(e=>{
+    const d=new Date(e.ts);
+    const dt=d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    return`<div class="le"><div class="ldot" style="background:${e.color}"></div><div style="flex:1"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px"><span style="font-size:14px;font-weight:600">${e.emo}</span><span style="font-size:11px;color:#aaa">${dt}</span></div><div class="lmeta">Intensidad ${e.int}/10 · ${e.moonIcon||''} ${e.moon}${e.nota?' · "'+e.nota+'"':''}</div></div></div>`;
+  }).join('');
+}
+function rPerf(){
+  const p=gp();
+  if(p.nombre){
+    document.getElementById('pavatar').textContent=p.nombre.charAt(0).toUpperCase();
+    document.getElementById('pnamedis').textContent=p.nombre;
+    document.getElementById('pagedis').textContent=p.edad?p.edad+' años':'';
+    document.getElementById('pobjdis').textContent=p.objetivo?'"'+p.objetivo+'"':'';
+    document.getElementById('pnom').value=p.nombre;
+    document.getElementById('pedad').value=p.edad||'';
+    document.getElementById('pobj').value=p.objetivo||'';
+  }
+  const data=gd(),ps=document.getElementById('pstats');
+  if(!data.length){ps.innerHTML='<div class="notice" style="grid-column:span 3">Aún sin registros</div>';return}
+  const dias=new Set(data.map(e=>e.ts.slice(0,10))).size;
+  const freq={};data.forEach(e=>freq[e.emo]=(freq[e.emo]||0)+1);
+  const top=Object.entries(freq).sort((a,b)=>b[1]-a[1])[0];
+  const avg=(data.reduce((a,b)=>a+b.int,0)/data.length).toFixed(1);
+  const cats={};data.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+1);
+  const posP=Math.round((cats.positiva||0)/data.length*100);
+  ps.innerHTML=`<div class="sc"><div class="sv">${data.length}</div><div class="sl">registros totales</div></div><div class="sc"><div class="sv">${dias}</div><div class="sl">días activos</div></div><div class="sc"><div class="sv">${avg}</div><div class="sl">intensidad media</div></div><div class="sc" style="margin-top:8px"><div class="sv" style="font-size:13px;padding-top:4px">${top?top[0]:'—'}</div><div class="sl">emoción más frecuente</div></div><div class="sc" style="margin-top:8px"><div class="sv">${posP}%</div><div class="sl">emociones positivas</div></div><div class="sc" style="margin-top:8px"><div class="sv">${data.length>0?Math.round(data.length/Math.max(dias,1)*10)/10:0}</div><div class="sl">registros por día</div></div>`;
+}
+function savePerfil(){
+  const p={nombre:document.getElementById('pnom').value.trim(),edad:document.getElementById('pedad').value,objetivo:document.getElementById('pobj').value.trim()};
+  sp(p);rPerf();hdr();
+  const m=document.getElementById('pmsg');m.textContent='✓ Perfil guardado correctamente';
+  setTimeout(()=>m.textContent='',3000);
+}
+function exportar(){
+  const blob=new Blob([JSON.stringify(gd(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mis_emociones_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function exportarCSV(){
+  const data=gd();
+  if(!data.length){alert('No hay datos para exportar');return}
+  const cols=['fecha','hora','emocion','categoria','intensidad','nota','fase_lunar','nombre','edad'];
+  const rows=data.map(e=>{const d=new Date(e.ts);return[d.toLocaleDateString('es-CO'),d.toLocaleTimeString('es-CO'),e.emo,e.cat,e.int,'"'+(e.nota||'').replace(/"/g,"'")+'"',e.moon,e.nombre,e.edad].join(',')});
+  const csv=cols.join(',')+'\n'+rows.join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mis_emociones_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+initE();initI();hdr();
+</script>
+</body>
+</html>
