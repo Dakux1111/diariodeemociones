@@ -416,34 +416,36 @@ initE();initI();hdr();
 </div>
 
 <script>
-  const PAGE_KEY  = "diario-emocional";   // único por página
+  const PAGE_KEY  = "diario-emociones";   // único por página
   const NAMESPACE = "mi-nombre-github"; // igual en todas
 
   const storageKey = "visited_" + NAMESPACE + "_" + PAGE_KEY;
-  const today      = new Date().toISOString().slice(0, 10); // "2025-04-09"
+  const today      = new Date().toISOString().slice(0, 10);
   const lastVisit  = localStorage.getItem(storageKey);
 
   if (lastVisit === today) {
-    // Ya visitaste hoy → solo lee el conteo guardado, sin sumar
-    fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${PAGE_KEY}/get`)
+    // Ya visitaste hoy → usa /hit que solo lee sin sumar
+    fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${PAGE_KEY}/hit`)
       .then(r => r.json())
       .then(d => {
+        const count = d.count ?? d.value ?? d.hits ?? null;
         document.getElementById('visit-num').textContent =
-          d.count?.toLocaleString() ?? '—';
+          count !== null ? Number(count).toLocaleString() : '—';
         document.getElementById('visit-counter').style.opacity = '1';
       })
       .catch(() => {
         document.getElementById('visit-counter').style.display = 'none';
       });
   } else {
-    // Primera visita del día → suma 1 y guarda la fecha
+    // Primera visita del día → suma 1
     fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${PAGE_KEY}/up`)
       .then(r => r.json())
       .then(d => {
+        const count = d.count ?? d.value ?? d.hits ?? null;
         document.getElementById('visit-num').textContent =
-          d.count?.toLocaleString() ?? '—';
+          count !== null ? Number(count).toLocaleString() : '—';
         document.getElementById('visit-counter').style.opacity = '1';
-        localStorage.setItem(storageKey, today); // marca "ya visité hoy"
+        localStorage.setItem(storageKey, today);
       })
       .catch(() => {
         document.getElementById('visit-counter').style.display = 'none';
