@@ -412,29 +412,43 @@ initE();initI();hdr();
   opacity: 0;
   transition: opacity .4s;
 ">
-  👁️ Visitas: <strong id="visit-num" style="color:#7F77DD;font-size:15px">...</strong>
+  🍀​ Visitas: <strong id="visit-num" style="color:#7F77DD;font-size:15px">...</strong>
 </div>
 
 <script>
-  // 🔧 CAMBIA ESTO: pon un nombre único para esta página
-  //    Usa solo letras, números y guiones. Sin espacios.
-  //    Ejemplos: "diario-emocional", "pagina-inicio", "portfolio-cv"
-  const PAGE_KEY = "diario-emocional";
+  const PAGE_KEY  = "diario-emocional";   // único por página
+  const NAMESPACE = "mi-nombre-github"; // igual en todas
 
-  // Namespace: ponle tu nombre o username de GitHub (en minúsculas)
-  const NAMESPACE = "mi-nombre-github";
+  const storageKey = "visited_" + NAMESPACE + "_" + PAGE_KEY;
+  const today      = new Date().toISOString().slice(0, 10); // "2025-04-09"
+  const lastVisit  = localStorage.getItem(storageKey);
 
-  fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${PAGE_KEY}/up`)
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('visit-num').textContent =
-        data.count?.toLocaleString() ?? '—';
-      document.getElementById('visit-counter').style.opacity = '1';
-    })
-    .catch(() => {
-      // Si falla la red, simplemente no muestra el widget
-      document.getElementById('visit-counter').style.display = 'none';
-    });
+  if (lastVisit === today) {
+    // Ya visitaste hoy → solo lee el conteo guardado, sin sumar
+    fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${PAGE_KEY}/get`)
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('visit-num').textContent =
+          d.count?.toLocaleString() ?? '—';
+        document.getElementById('visit-counter').style.opacity = '1';
+      })
+      .catch(() => {
+        document.getElementById('visit-counter').style.display = 'none';
+      });
+  } else {
+    // Primera visita del día → suma 1 y guarda la fecha
+    fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${PAGE_KEY}/up`)
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('visit-num').textContent =
+          d.count?.toLocaleString() ?? '—';
+        document.getElementById('visit-counter').style.opacity = '1';
+        localStorage.setItem(storageKey, today); // marca "ya visité hoy"
+      })
+      .catch(() => {
+        document.getElementById('visit-counter').style.display = 'none';
+      });
+  }
 </script>
 <!-- ═══════════════════════════════════ -->
 </body>
